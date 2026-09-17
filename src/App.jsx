@@ -1,11 +1,13 @@
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Mail, MessageSquare } from 'lucide-react';
+import { MessageSquare, ChevronDown, Mail } from 'lucide-react';
 
 // Component Imports
 import ShootingStarBackground from './ShootingStarBackground';
 import ISSTracker from './ISSTracker';
+import TrackerInfoSection from './TrackerInfoSection';
 
+// --- MAIN APP COMPONENT ---
 export default function App() {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-blue-500/30 overflow-x-hidden">
@@ -24,7 +26,7 @@ export default function App() {
             </h1>
             <div className="h-[1px] w-12 sm:w-24 bg-blue-400/30 mx-auto mb-6 sm:mb-10 shadow-[0_0_20px_rgba(96,165,250,0.3)]" />
             <p className="text-[10px] sm:text-lg md:text-xl lg:text-2xl font-light tracking-[0.2em] sm:tracking-[0.5em] uppercase text-blue-300/60 italic px-4">
-              Piece of the universe
+              Cosmic ISS Tracker
             </p>
           </motion.div>
           
@@ -35,7 +37,10 @@ export default function App() {
 
         <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-32 space-y-32 md:space-y-48 relative z-20">
           
-          {/* --- MISSION CONTROL --- */}
+          {/* --- INFO SECTION (Ersetzt AboutSection) --- */}
+          <TrackerInfoSection />
+
+          {/* --- MISSION CONTROL (ISS TRACKER) --- */}
           <section id="mission-control" className="w-full">
             <div className="text-center mb-10 sm:mb-20">
               <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-blue-400/30 mb-4">Our Universe</h2>
@@ -104,7 +109,7 @@ export default function App() {
             </motion.a>
 
             <p className="text-[9px] sm:text-[10px] tracking-[0.4em] uppercase text-slate-500/60">
-              © 2026 Fyffes My World
+              © 2026 Cosmic ISS Tracker
             </p>
 
           </div>
@@ -115,6 +120,7 @@ export default function App() {
   );
 }
 
+// Sub-component for Contact Links
 function ContactLink({ href, icon, label, value }) {
   return (
     <motion.a
