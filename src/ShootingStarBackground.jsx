@@ -114,13 +114,13 @@ export default function ShootingStarBackground({ children }) {
 
   // Big Dipper coordinates
   const bigDipperStars = [
-    { x: '5vw', y: '20vh', delay: '0s' }, 
-    { x: '12vw', y: '18vh', delay: '0.5s' }, 
-    { x: '18vw', y: '22vh', delay: '1.2s' }, 
-    { x: '22vw', y: '30vh', delay: '0.8s' }, 
-    { x: '23vw', y: '40vh', delay: '2.1s' }, 
-    { x: '32vw', y: '41vh', delay: '1.5s' }, 
-    { x: '33vw', y: '31vh', delay: '0.3s' }, 
+    { x: '5vw', y: '13vh', delay: '0s' }, 
+    { x: '12vw', y: '11vh', delay: '0.5s' }, 
+    { x: '18vw', y: '15vh', delay: '1.2s' }, 
+    { x: '22vw', y: '23vh', delay: '0.8s' }, 
+    { x: '23vw', y: '33vh', delay: '2.1s' }, 
+    { x: '32vw', y: '34vh', delay: '1.5s' }, 
+    { x: '33vw', y: '24vh', delay: '0.3s' }, 
   ];
 
   const OrionBriefing = ({ isUnlocked }) => {
@@ -130,12 +130,12 @@ export default function ShootingStarBackground({ children }) {
         <div className="absolute top-[98%] left-1/2 -translate-x-1/2 w-4 h-4 bg-[#020617] rotate-45 border-r border-b border-white/20" />
         <div className="flex flex-col gap-3">
           <div className="border-b border-white/10 pb-2">
-            <h4 className="text-[11px] sm:text-[12px] font-black uppercase tracking-widest text-blue-400 text-center">Orion Capsule "Integrity"</h4>
-            <p className="text-[8px] sm:text-[9px] text-white/40 font-mono mt-0.5 uppercase tracking-tighter italic text-center">Mission: Journey around the Moon</p>
+            <h4 className="text-[11px] sm:text-[12px] font-mono font-bold uppercase tracking-[0.2em] text-blue-400 text-center">Orion Capsule "Integrity"</h4>
+            <p className="text-[8px] sm:text-[9px] text-white/50 font-mono mt-0.5 uppercase tracking-wider text-center">Mission: Journey around the Moon</p>
           </div>
           <div className="space-y-1.5">
-            <span className="text-[9px] sm:text-[10px] text-white/60 uppercase font-bold tracking-tighter text-center block">Flight Crew:</span>
-            <ul className="text-[10px] sm:text-[11px] space-y-1 font-medium italic">
+            <span className="text-[9px] sm:text-[10px] text-white/60 uppercase font-mono tracking-widest text-center block">Flight Crew:</span>
+            <ul className="text-[10px] sm:text-[11px] space-y-1 font-sans tracking-wide">
               <li className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-400 rounded-full" /> Reid Wiseman</li>
               <li className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-400 rounded-full" /> Victor Glover</li>
               <li className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-400 rounded-full" /> Christina Koch</li>
@@ -143,8 +143,8 @@ export default function ShootingStarBackground({ children }) {
             </ul>
           </div>
           <div className="pt-3 border-t border-white/10 flex flex-col items-center gap-1">
-             <span className="text-yellow-400 text-[11px] sm:text-[12px] font-black uppercase tracking-wider">Rise (ZGI)</span>
-             <span className="text-white/80 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+             <span className="text-yellow-400 text-[11px] sm:text-[12px] font-mono font-bold uppercase tracking-widest">Rise (ZGI)</span>
+             <span className="text-white/90 text-[9px] sm:text-[10px] font-mono font-extrabold uppercase tracking-[0.25em] mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]">
                 Godspeed Artemis II
              </span>
           </div>
@@ -156,7 +156,7 @@ export default function ShootingStarBackground({ children }) {
   const CraterTooltip = ({ name, isUnlocked }) => {
     if (!isUnlocked) return null;
     return (
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-2 bg-[#020617] text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] whitespace-nowrap text-[9px] sm:text-[10px] font-black uppercase border border-white/10 pointer-events-none translate-y-2 group-hover:translate-y-0">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-2 bg-[#020617] text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] whitespace-nowrap text-[9px] sm:text-[10px] font-mono tracking-wider uppercase border border-white/10 pointer-events-none translate-y-2 group-hover:translate-y-0">
         <div className="absolute top-[95%] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#020617] rotate-45 border-r border-b border-white/10" />
         {name}
       </div>
@@ -218,7 +218,7 @@ export default function ShootingStarBackground({ children }) {
       </div>
 
       {/* ORION CAPSULE */}
-      <div className={`absolute top-[5%] right-[10%] md:top-[13%] md:right-[19%] z-40 animate-orion transition-all duration-1000 ease-in-out scale-75 sm:scale-90 md:scale-100
+      <div className={`absolute top-[5%] right-[10%] md:top-[14%] md:right-[5%] z-40 animate-orion transition-all duration-1000 ease-in-out scale-75 sm:scale-90 md:scale-100
         ${moonUnlocked ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
         <div className="relative group">
           <OrionBriefing isUnlocked={true} />
