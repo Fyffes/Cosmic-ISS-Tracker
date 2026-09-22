@@ -6,11 +6,15 @@ import { MessageSquare, ChevronDown, Mail } from 'lucide-react';
 import ShootingStarBackground from './ShootingStarBackground';
 import ISSTracker from './ISSTracker';
 import TrackerInfoSection from './TrackerInfoSection';
+import ISSLearn from './ISSLearn';
+import ISSView from './ISSView';
+import SelectMenu from './SelectMenu';
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-blue-500/30 overflow-x-hidden">
+    /* font-sans entfernt, damit automatisch die Space Meatball aus der index.css greift */
+    <div className="min-h-screen bg-[#020617] text-slate-100 selection:bg-blue-500/30 overflow-x-hidden">
       <ShootingStarBackground>
         
         {/* --- HERO SECTION --- */}
@@ -21,12 +25,12 @@ export default function App() {
             transition={{ duration: 1.5 }}
             className="text-center w-full max-w-7xl"
           >
-            <h1 className="text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] xl:text-[15rem] font-light tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-blue-200 leading-none select-none break-words">
-              Fyffes
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[9rem] font-light tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-blue-200 leading-none select-none break-words">
+              Cosmic ISS Tracker
             </h1>
             <div className="h-[1px] w-12 sm:w-24 bg-blue-400/30 mx-auto mb-6 sm:mb-10 shadow-[0_0_20px_rgba(96,165,250,0.3)]" />
-            <p className="text-[10px] sm:text-lg md:text-xl lg:text-2xl font-light tracking-[0.2em] sm:tracking-[0.5em] uppercase text-blue-300/60 italic px-4">
-              Cosmic ISS Tracker
+            <p className="text-[10px] sm:text-lg md:text-xl lg:text-2xl font-light tracking-[0.2em] sm:tracking-[0.5em] uppercase text-blue-300/60 px-4">
+              Made by Fyffes
             </p>
           </motion.div>
           
@@ -37,14 +41,17 @@ export default function App() {
 
         <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-32 space-y-32 md:space-y-48 relative z-20">
           
-          {/* --- INFO SECTION (Ersetzt AboutSection) --- */}
+          {/* --- Select Menu --- */}
+          <SelectMenu />
+          
+          {/* --- INFO SECTION --- */}
           <TrackerInfoSection />
 
-          {/* --- MISSION CONTROL (ISS TRACKER) --- */}
+          {/* --- MISSION CONTROL (ISS TRACKER & SIGHTING CHECKER) --- */}
           <section id="mission-control" className="w-full">
             <div className="text-center mb-10 sm:mb-20">
               <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-blue-400/30 mb-4">Our Universe</h2>
-              <p className="text-3xl sm:text-5xl font-light italic text-white mb-12">ISS Orbital Telemetry</p>
+              <p className="text-3xl sm:text-5xl font-light text-white mb-12">ISS Orbital Telemetry</p>
             </div>
             
             <div className="glass rounded-2xl sm:rounded-3xl overflow-hidden">
@@ -54,11 +61,17 @@ export default function App() {
             </div>
           </section>
 
+          {/* --- INTERACTIVE ISS ANATOMY & MODULE EXPLORER --- */}
+          <ISSLearn />
+
+          {/* --- NEW: ORBITAL GALLERY --- */}
+          <ISSView />
+
           {/* --- CONTACT SECTION --- */}
           <section id="contact" className="max-w-4xl mx-auto pt-20 w-full">
              <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-blue-400/30 mb-4">Communications</h2>
-                <p className="text-4xl sm:text-6xl font-light italic text-white mb-6">Open Channels</p>
+                <p className="text-4xl sm:text-6xl font-light text-white mb-6">Open Channels</p>
                 <p className="text-slate-400 font-light max-w-md mx-auto text-sm sm:text-base leading-relaxed px-4">
                   Feel free to reach out for collaborations or just to say hello. The signal is always open.
                 </p>
