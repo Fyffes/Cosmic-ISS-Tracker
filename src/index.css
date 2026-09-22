@@ -1,9 +1,12 @@
+/* CDN-Import für Space Meatball (Font Library) */
+@import url('https://fontlibrary.org/face/space-meatball');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Ensure consistent box sizing for all elements */
+  /* Box-Sizing für alle Elemente vereinheitlichen */
   *, ::before, ::after {
     box-sizing: border-box;
   }
@@ -14,19 +17,18 @@
   }
 
   body {
-    /* overflow-x-hidden prevents horizontal wobble on mobile */
-    /* overscroll-behavior-y prevents pull-to-refresh layout glitches */
+    /* 'SpaceMeatballRegular' ist der exakte Name aus dem Font-Library-CDN */
+    font-family: 'SpaceMeatballRegular', sans-serif;
     @apply m-0 p-0 bg-[#020617] text-slate-200 antialiased overflow-x-hidden w-full min-h-screen;
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
   }
 
-  /* Responsive and optimized media handling */
+  /* Responsive und optimierte Medien-Handhabung */
   img, video, canvas, svg {
     max-width: 100%;
     height: auto;
     display: block;
-    /* Forces GPU handling for smoother image scaling */
     transform: translateZ(0); 
   }
 
@@ -35,7 +37,7 @@
   }
 }
 
-/* Custom Scrollbar for Desktop */
+/* Custom Scrollbar für Desktop */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -49,29 +51,30 @@
   @apply bg-blue-600;
 }
 
+@layer utilities {
+  /* Utility-Klassen für Tailwind */
+  .font-space-meatball {
+    font-family: 'SpaceMeatballRegular', sans-serif;
+  }
+}
+
 @layer components {
-  /* Highly Optimized Glassmorphism Effect */
+  /* Glassmorphism Effekt */
   .glass {
-    /* Changed shadow-2xl to shadow-xl to save performance on low-end devices */
     @apply backdrop-blur-md bg-white/5 border border-white/10 shadow-xl;
-    
-    /* Safari Specific Support */
     -webkit-backdrop-filter: blur(12px);
-    
-    /* GPU Acceleration: Moves the heavy blur calculation to the graphics card */
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     will-change: transform, backdrop-filter;
   }
 
-  /* Full-Width Container: Dynamic spacing for every screen size */
+  /* Full-Width Container */
   .full-width-section {
     @apply w-full px-4 sm:px-8 md:px-12 lg:px-20 xl:max-w-7xl mx-auto;
   }
 
-  /* NEW: Massive performance boost for large sections */
+  /* Performance-Boost für große Abschnitte */
   .render-fast {
-    /* Tells the browser to skip rendering this content until the user scrolls near it */
     content-visibility: auto;
     contain-intrinsic-size: 1px 1000px;
   }
