@@ -54,7 +54,7 @@ export default function TrackerInfoSection() {
           viewport={{ once: true }}
           className="mb-4"
         >
-          <h2 className="text-blue-400/50 uppercase text-[9px] md:text-[10px] font-black tracking-[0.6em] md:tracking-[0.8em]">
+          <h2 className="text-blue-400/50 uppercase text-[9px] md:text-[10px] font-mono font-bold tracking-[0.6em] md:tracking-[0.8em]">
             Orbital Data
           </h2>
         </motion.div>
@@ -63,7 +63,7 @@ export default function TrackerInfoSection() {
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-white"
+          className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight text-white font-sans"
         >
           The ISS Tracker 🛰️
         </motion.h1>
@@ -71,7 +71,7 @@ export default function TrackerInfoSection() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="italic text-slate-400 text-sm md:text-base px-4"
+          className="italic text-slate-400 text-sm md:text-base px-4 font-sans tracking-wide"
         >
           "A real-time window to humanity's greatest engineering marvel."
         </motion.p>
@@ -107,13 +107,13 @@ export default function TrackerInfoSection() {
         >
           <div className="flex items-center gap-3 justify-center lg:justify-start">
             <span className="text-xl">📡</span>
-            <h3 className="text-xl font-bold text-white uppercase text-[12px] tracking-[0.3em]">
+            <h3 className="text-xl font-mono font-bold text-white uppercase text-[12px] tracking-[0.3em]">
               Mission Control Data
             </h3>
           </div>
           
           <div className="backdrop-blur-md bg-white/[0.03] border border-white/10 p-5 md:p-8 rounded-3xl shadow-2xl">
-            <p className="text-slate-300 leading-relaxed mb-8 text-sm md:text-base text-center lg:text-left">
+            <p className="text-slate-300 leading-relaxed mb-8 text-sm md:text-base text-center lg:text-left font-sans tracking-normal">
               This system intercepts public API telemetry to plot the live coordinates of the International Space Station. Orbiting in the thermosphere, it serves as a microgravity laboratory and the ultimate testament to international cooperation.
             </p>
 
@@ -124,9 +124,9 @@ export default function TrackerInfoSection() {
                 { icon: '🌍', text: 'Orbital Period:', bold: '~93 Minutes per lap' },
                 { icon: '👨‍🚀', text: 'Continuously inhabited since:', bold: 'November 2000' }
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 text-xs md:text-sm text-slate-300">
-                  <span className="w-6 text-center">{item.icon}</span>
-                  <p>{item.text} <span className="text-white font-semibold">{item.bold}</span></p>
+                <div key={i} className="flex items-center gap-3 text-xs md:text-sm text-slate-300 font-sans">
+                  <span className="w-6 text-center font-mono">{item.icon}</span>
+                  <p>{item.text} <span className="text-white font-semibold font-mono tracking-wide">{item.bold}</span></p>
                 </div>
               ))}
             </div>
