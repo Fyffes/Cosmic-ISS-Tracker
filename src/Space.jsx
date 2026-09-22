@@ -23,7 +23,7 @@ export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, 
   const segments = useMemo(() => splitSegments(orbitData), [orbitData]);
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
+    <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden font-sans">
       <div className="relative w-full aspect-[2/1] max-h-full">
         <img
           src="https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_01deg.jpg"
@@ -55,7 +55,7 @@ export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, 
             }}
           >
             <div className="absolute w-2 h-2 md:w-2.5 md:h-2.5 bg-[#00ffcc] rounded-full shadow-[0_0_12px_#00ffcc] z-10 border border-black/40" />
-            <div className="absolute top-3 md:top-4 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded border border-[#00ffcc]/30 text-[6px] md:text-[8px] font-mono text-[#00ffcc] whitespace-nowrap uppercase tracking-widest">
+            <div className="absolute top-3 md:top-4 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded border border-[#00ffcc]/30 text-[6px] md:text-[8px] font-mono text-[#00ffcc] whitespace-nowrap uppercase tracking-widest font-semibold">
               YOU
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, 
               className="absolute w-8 h-8 md:w-14 md:h-14 bg-white/30 rounded-full"
             />
             <div className="absolute w-2 h-2 md:w-3 md:h-3 bg-white rounded-full shadow-[0_0_15px_#fff] z-10 border border-black/40" />
-            <div className="absolute top-4 md:top-6 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded border border-white/20 text-[6px] md:text-[10px] font-mono text-white whitespace-nowrap uppercase tracking-widest">
+            <div className="absolute top-4 md:top-6 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded border border-white/20 text-[6px] md:text-[10px] font-mono text-white whitespace-nowrap uppercase tracking-widest font-medium">
               {lat.toFixed(2)}°N {lng.toFixed(2)}°E
             </div>
           </div>
