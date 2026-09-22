@@ -12,11 +12,11 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    {/* The wrapper below ensures the app occupies the full width and minimum full height 
-      of any device screen (Mobile, Tablet, Desktop). 
-      'overflow-x-hidden' prevents unwanted horizontal scrolling.
+    {/* 
+      Der Wrapper stellt sicher, dass die App den gesamten Bildschirm einnimmt.
+      Die Schriftart 'Space Meatball' greift automatisch über die index.css.
     */}
-    <div className="min-h-screen w-full bg-[#020617] flex flex-col overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[#020617] flex flex-col overflow-x-hidden font-space-meatball">
       <App />
     </div>
   </React.StrictMode>
