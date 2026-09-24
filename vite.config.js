@@ -7,5 +7,16 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true
+  },
+  build: {
+    target: 'esnext'
+  },
+  worker: {
+    format: 'es' // Behebt den "Top-level await with iife format" Fehler
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    }
   }
 })
