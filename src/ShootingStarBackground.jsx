@@ -252,7 +252,7 @@ export default function ShootingStarBackground({ children }) {
 
       {/* ORION CAPSULE */}
       <div
-        className={`absolute top-[5%] right-[10%] md:top-[14%] md:right-[5%] z-40 animate-orion transition-all duration-1000 ease-in-out scale-75 sm:scale-90 md:scale-100
+        className={`absolute top-[10%] right-[10%] md:top-[7%] md:right-[5%] z-40 animate-orion transition-all duration-1000 ease-in-out scale-75 sm:scale-90 md:scale-100
         ${moonUnlocked ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
       >
         <div className="relative group">
