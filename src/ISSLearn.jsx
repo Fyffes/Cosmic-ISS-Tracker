@@ -184,10 +184,10 @@ export default function ISSLearn({
   return (
     <section
       id="iss-learn"
-      className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-20 text-white font-sans z-30"
+      className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-20 text-white z-30"
     >
       {/* SECTION HEADER */}
-      <div className="text-center mb-8 md:mb-14">
+      <div className="text-center mb-12 md:mb-20">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -203,7 +203,7 @@ export default function ISSLearn({
           initial={{ opacity: 0, y: -10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-2xl md:text-4xl font-extrabold tracking-tight text-white"
+          className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4"
         >
           Anatomy of the Station
         </motion.h2>
