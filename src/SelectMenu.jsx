@@ -13,23 +13,21 @@ const MENU_ITEMS = [
 export default function SelectMenu() {
   return (
     <section className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-20 z-40">
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-slate-900/40 border border-white/5 rounded-3xl p-8 md:p-16 backdrop-blur-sm shadow-2xl">
-        
         {/* LEFT SIDE: Floating ISS Image */}
         <div className="relative flex justify-center items-center h-64 md:h-96">
           {/* Subtle background glow */}
           <div className="absolute w-3/4 h-3/4 bg-[#00ffcc]/10 blur-[80px] rounded-full" />
-          
+
           {/* Floating Animation */}
           <motion.img
             src="/assets/ISS White Transparent.jpg"
             alt="ISS Navigational Model"
             animate={{ y: [-15, 15, -15] }}
-            transition={{ 
-              duration: 6, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: 'easeInOut',
             }}
             /* screen mode ensures the black background of the jpg becomes fully transparent */
             style={{ mixBlendMode: 'screen' }}
@@ -39,7 +37,7 @@ export default function SelectMenu() {
 
         {/* RIGHT SIDE: Navigation Menu */}
         <div className="flex flex-col space-y-2">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -73,15 +71,14 @@ export default function SelectMenu() {
                     {item.label}
                   </span>
                 </div>
-                <ChevronRight 
-                  size={18} 
-                  className="text-slate-600 group-hover:text-[#00ffcc] group-hover:translate-x-1 transition-all duration-300" 
+                <ChevronRight
+                  size={18}
+                  className="text-slate-600 group-hover:text-[#00ffcc] group-hover:translate-x-1 transition-all duration-300"
                 />
               </motion.a>
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );

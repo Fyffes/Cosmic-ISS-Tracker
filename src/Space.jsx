@@ -1,7 +1,16 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, mapTiming, orbitData, userLoc }) {
+export default function Space({
+  lat,
+  lng,
+  isLoaded,
+  pulseKeyframes,
+  pulseTimes,
+  mapTiming,
+  orbitData,
+  userLoc,
+}) {
   const getX = (lon) => ((lon + 180) / 360) * 100;
   const getY = (lati) => ((90 - lati) / 180) * 100;
 
@@ -31,15 +40,19 @@ export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, 
           alt="NASA Earth Night"
         />
 
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none z-10"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
           {segments.map((seg, i) => (
-            <polyline 
-              key={i} 
-              points={seg.map(p => `${p.x},${p.y}`).join(' ')} 
-              fill="none" 
-              stroke="rgba(255, 255, 255, 0.4)" 
-              strokeWidth="0.2" 
-              strokeDasharray="0.5,1" 
+            <polyline
+              key={i}
+              points={seg.map((p) => `${p.x},${p.y}`).join(' ')}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.4)"
+              strokeWidth="0.2"
+              strokeDasharray="0.5,1"
             />
           ))}
         </svg>
@@ -51,7 +64,8 @@ export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, 
               left: `${getX(userLoc.lng)}%`,
               top: `${getY(userLoc.lat)}%`,
               transform: 'translate(-50%, -50%)',
-              width: '0px', height: '0px'
+              width: '0px',
+              height: '0px',
             }}
           >
             <div className="absolute w-2 h-2 md:w-2.5 md:h-2.5 bg-[#00ffcc] rounded-full shadow-[0_0_12px_#00ffcc] z-10 border border-black/40" />
@@ -68,7 +82,8 @@ export default function Space({ lat, lng, isLoaded, pulseKeyframes, pulseTimes, 
               left: `${getX(lng)}%`,
               top: `${getY(lat)}%`,
               transform: 'translate(-50%, -50%)',
-              width: '0px', height: '0px'
+              width: '0px',
+              height: '0px',
             }}
           >
             <motion.div

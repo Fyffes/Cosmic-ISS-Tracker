@@ -7,7 +7,9 @@
 
 @layer base {
   /* Standardize box sizing for all elements */
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     box-sizing: border-box;
   }
 
@@ -25,11 +27,14 @@
   }
 
   /* Responsive and Optimized Media Handling */
-  img, video, canvas, svg {
+  img,
+  video,
+  canvas,
+  svg {
     max-width: 100%;
     height: auto;
     display: block;
-    transform: translateZ(0); 
+    transform: translateZ(0);
   }
 
   ::selection {
