@@ -328,12 +328,6 @@ export default function ISSLearn({ imagePath = '/assets/ISS Dark Transparent.jpg
               {/* Modal Footer */}
               <div className="px-6 py-4 bg-black/40 border-t border-white/5 flex justify-between items-center">
                 <span className="text-slate-500/50 text-[9px] font-mono uppercase tracking-[0.2em]">Orbital Spec Sheet</span>
-                <button
-                  onClick={() => setSelectedModule(null)}
-                  className="bg-[#00ffcc]/10 hover:bg-[#00ffcc]/20 text-[#00ffcc] border border-[#00ffcc]/30 px-5 py-2.5 rounded-xl text-[10px] font-mono uppercase font-bold tracking-widest transition-all hover:shadow-[0_0_15px_rgba(0,255,204,0.2)]"
-                >
-                  Close Telemetry
-                </button>
               </div>
             </motion.div>
           </motion.div>

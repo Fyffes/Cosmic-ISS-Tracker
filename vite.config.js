@@ -12,7 +12,7 @@ export default defineConfig({
     target: 'esnext'
   },
   worker: {
-    format: 'es' // Behebt den "Top-level await with iife format" Fehler
+    format: 'es' 
   },
   optimizeDeps: {
     esbuildOptions: {

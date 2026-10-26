@@ -185,7 +185,7 @@ export default function ISSTracker() {
     return () => { clearInterval(interval); clearInterval(orbitInterval); };
   }, []);
 
-  // --- Naked-Eye Visible Pass Sighting Logic ---
+  // --- Visible Pass Sighting Logic ---
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchInput.trim()) return;
@@ -591,7 +591,7 @@ function PassMapModal({ pass, userLoc, onClose }) {
           <div className="flex flex-col gap-1 border-l-2 border-white/20 pl-3">
             <span className="text-white/40 text-[9px] uppercase tracking-widest font-bold">Sighting Grade</span>
             <span className="text-[#00ffcc] text-xs md:text-sm font-bold">{pass.quality}</span>
-            <span className="text-white/50 text-[9px]">Naked Eye Visibility</span>
+            <span className="text-white/50 text-[9px]">Eye Visibility</span>
           </div>
         </div>
       </motion.div>

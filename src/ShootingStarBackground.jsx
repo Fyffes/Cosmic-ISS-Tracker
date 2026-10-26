@@ -112,7 +112,7 @@ export default function ShootingStarBackground({ children }) {
     };
   }, []);
 
-  // Big Dipper coordinates
+  // Big Dipper Constellation Coordinates
   const bigDipperStars = [
     { x: '5vw', y: '13vh', delay: '0s' }, 
     { x: '12vw', y: '11vh', delay: '0.5s' }, 

@@ -1,4 +1,4 @@
-/* CDN-Import für Space Meatball (Font Library) */
+/* CDN Import for Space Meatball (Font Library) */
 @import url('https://fontlibrary.org/face/space-meatball');
 
 @tailwind base;
@@ -6,7 +6,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* Box-Sizing für alle Elemente vereinheitlichen */
+  /* Standardize box sizing for all elements */
   *, ::before, ::after {
     box-sizing: border-box;
   }
@@ -17,14 +17,14 @@
   }
 
   body {
-    /* 'SpaceMeatballRegular' ist der exakte Name aus dem Font-Library-CDN */
+    /* “SpaceMeatballRegular” is the exact name from the font library CDN */
     font-family: 'SpaceMeatballRegular', sans-serif;
     @apply m-0 p-0 bg-[#020617] text-slate-200 antialiased overflow-x-hidden w-full min-h-screen;
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
   }
 
-  /* Responsive und optimierte Medien-Handhabung */
+  /* Responsive and Optimized Media Handling */
   img, video, canvas, svg {
     max-width: 100%;
     height: auto;
@@ -37,7 +37,7 @@
   }
 }
 
-/* Custom Scrollbar für Desktop */
+/* Custom Scrollbar for Desktop */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -52,14 +52,14 @@
 }
 
 @layer utilities {
-  /* Utility-Klassen für Tailwind */
+  /* Utility Classes for Tailwind */
   .font-space-meatball {
     font-family: 'SpaceMeatballRegular', sans-serif;
   }
 }
 
 @layer components {
-  /* Glassmorphism Effekt */
+  /* Glassmorphism Effect */
   .glass {
     @apply backdrop-blur-md bg-white/5 border border-white/10 shadow-xl;
     -webkit-backdrop-filter: blur(12px);
@@ -73,7 +73,7 @@
     @apply w-full px-4 sm:px-8 md:px-12 lg:px-20 xl:max-w-7xl mx-auto;
   }
 
-  /* Performance-Boost für große Abschnitte */
+  /* Performance Boost for Long Sections */
   .render-fast {
     content-visibility: auto;
     contain-intrinsic-size: 1px 1000px;

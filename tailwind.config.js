@@ -6,26 +6,19 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        // Deine Hintergrundfarbe aus dem CSS als "slate-950" Ersatz oder "brand-dark"
+      colors: { 
         dark: {
           DEFAULT: '#020617',
-          card: '#1e293b', // Passend zu deinem Scrollbar-Thumb
+          card: '#1e293b', 
         },
         accent: {
-          blue: '#3b82f6', // Dein Blau für Hover-Effekte
+          blue: '#3b82f6', 
         }
       },
-      // Falls du den Glass-Effekt oft nutzt, kannst du hier Standard-Werte definieren
       backdropBlur: {
         xs: '2px',
       }
     },
   },
-  plugins: [
-    // Falls noch nicht installiert, empfehle ich: 
-    // npm install -D @tailwindcss/typography @tailwindcss/forms
-    // require('@tailwindcss/typography'),
-    // require('@tailwindcss/forms'),
-  ],
+  plugins: [],
 }

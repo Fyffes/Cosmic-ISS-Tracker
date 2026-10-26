@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// NASA Black Marble Texture
 const EARTH_NIGHT_MAP = 'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_01deg.jpg';
 
 function Earth() {

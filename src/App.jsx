@@ -13,7 +13,7 @@ import SelectMenu from './SelectMenu';
 // --- MAIN APP COMPONENT ---
 export default function App() {
   return (
-    /* font-sans entfernt, damit automatisch die Space Meatball aus der index.css greift */
+    /* “font-sans” has been removed so that index.css automatically uses “Space Meatball” */
     <div className="min-h-screen bg-[#020617] text-slate-100 selection:bg-blue-500/30 overflow-x-hidden">
       <ShootingStarBackground>
         
@@ -25,7 +25,7 @@ export default function App() {
             transition={{ duration: 1.5 }}
             className="text-center w-full max-w-7xl"
           >
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[9rem] font-light tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-blue-200 leading-none select-none break-words">
+            <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-[5rem] font-light tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-blue-200 leading-none select-none break-words">
               Cosmic ISS Tracker
             </h1>
             <div className="h-[1px] w-12 sm:w-24 bg-blue-400/30 mx-auto mb-6 sm:mb-10 shadow-[0_0_20px_rgba(96,165,250,0.3)]" />
