@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as satellite from 'satellite.js';
 import Space from './Space';
 
-// --- Astronomical Helpers ---
+// --- Astronomical & Geographical Helpers ---
 const getSunElevation = (date, lat, lon) => {
   const rad = Math.PI / 180;
   const days =
@@ -51,6 +51,100 @@ const getCompassDirection = (azimuth) => {
     'NNW',
   ];
   return directions[Math.round(azimuth / 22.5) % 16];
+};
+
+// Coordinate-based fallback for exact Seas, Gulfs, Bays, and Oceans
+const getOceanOrSea = (lat, lon) => {
+  // 1. Check specific marginal seas, gulfs, and bays first
+  if (
+    lat >= 30 &&
+    lat <= 46 &&
+    lon >= -6 &&
+    lon <= 36 &&
+    !(lat >= 40.5 && lon >= 27)
+  )
+    return 'MEDITERRANEAN SEA';
+  if (lat >= 40.5 && lat <= 47.5 && lon >= 27 && lon <= 42) return 'BLACK SEA';
+  if (lat >= 36.5 && lat <= 47.2 && lon >= 46.5 && lon <= 54.5)
+    return 'CASPIAN SEA';
+  if (lat >= 12.5 && lat <= 30 && lon >= 32 && lon <= 44) return 'RED SEA';
+  if (lat >= 23.5 && lat <= 30.5 && lon >= 47.5 && lon <= 56.5)
+    return 'PERSIAN GULF';
+  if (lat >= 18 && lat <= 30.5 && lon >= -98 && lon <= -81)
+    return 'GULF OF MEXICO';
+  if (lat >= 9 && lat <= 22 && lon >= -88 && lon <= -60) return 'CARIBBEAN SEA';
+  if (lat >= 51 && lat <= 64 && lon >= -95 && lon <= -77) return 'HUDSON BAY';
+  if (lat >= 51 && lat <= 62 && lon >= -4 && lon <= 9) return 'NORTH SEA';
+  if (lat >= 53.5 && lat <= 66 && lon >= 9.5 && lon <= 30) return 'BALTIC SEA';
+  if (lat >= 62 && lat <= 71 && lon >= -10 && lon <= 16) return 'NORWEGIAN SEA';
+  if (lat >= 51.5 && lat <= 66 && (lon >= 162 || lon <= -157))
+    return 'BERING SEA';
+  if (lat >= 44 && lat <= 62 && lon >= 135 && lon <= 160)
+    return 'SEA OF OKHOTSK';
+  if (lat >= 33 && lat <= 52 && lon >= 127 && lon <= 142) return 'SEA OF JAPAN';
+  if (lat >= 24 && lat <= 34 && lon >= 120 && lon <= 130)
+    return 'EAST CHINA SEA';
+  if (lat >= 0 && lat <= 24 && lon >= 105 && lon <= 121)
+    return 'SOUTH CHINA SEA';
+  if (lat >= 5 && lat <= 31 && lon >= 122 && lon <= 145)
+    return 'PHILIPPINE SEA';
+  if (lat >= -9 && lat <= 0 && lon >= 106 && lon <= 132) return 'JAVA SEA';
+  if (lat >= -30 && lat <= -10 && lon >= 142 && lon <= 170) return 'CORAL SEA';
+  if (lat >= -47 && lat <= -30 && lon >= 147 && lon <= 175) return 'TASMAN SEA';
+  if (lat >= 5 && lat <= 25 && lon >= 50 && lon <= 77) return 'ARABIAN SEA';
+  if (lat >= 5 && lat <= 22 && lon >= 78 && lon <= 99) return 'BAY OF BENGAL';
+  if (lat >= -5 && lat <= 6 && lon >= -10 && lon <= 10) return 'GULF OF GUINEA';
+  if (lat >= -63 && lat <= -52 && lon >= -70 && lon <= -25) return 'SCOTIA SEA';
+
+  // 2. Fallback to the 5 major Oceans (with North/South hemisphere split)
+  if (lat > 66.5) return 'ARCTIC OCEAN';
+  if (lat < -60) return 'SOUTHERN OCEAN';
+
+  // Indian Ocean boundaries (Cape Agulhas ~20°E to Tasmania ~146.5°E)
+  if (lon >= 20 && lon <= 146.5 && lat <= 30) {
+    return 'INDIAN OCEAN';
+  }
+
+  // Atlantic Ocean boundaries
+  const isNorthAtlantic =
+    lat >= 0 &&
+    ((lat < 9 && lon >= -75 && lon < 20) ||
+      (lat >= 9 && lat < 18 && lon >= -85 && lon < 20) ||
+      (lat >= 18 && lon >= -98 && lon < 20));
+  const isSouthAtlantic = lat < 0 && lon >= -67.5 && lon < 20;
+
+  if (isNorthAtlantic) return 'NORTH ATLANTIC OCEAN';
+  if (isSouthAtlantic) return 'SOUTH ATLANTIC OCEAN';
+
+  // Default to Pacific Ocean
+  return lat >= 0 ? 'NORTH PACIFIC OCEAN' : 'SOUTH PACIFIC OCEAN';
+};
+
+// Fetch exact marine body via BigDataCloud with coordinate fallback
+const resolveMarineLocation = async (lat, lon) => {
+  try {
+    const res = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&localityLanguage=en`
+    );
+    const data = await res.json();
+    const informative = data?.localityInfo?.informative || [];
+
+    // Search from most specific to general for a water body
+    const marineKeywords =
+      /ocean|sea|gulf|bay|strait|channel|bight|sound|passage|basin/i;
+    for (let i = informative.length - 1; i >= 0; i--) {
+      const item = informative[i];
+      if (
+        marineKeywords.test(item.name || '') ||
+        marineKeywords.test(item.description || '')
+      ) {
+        return item.name.toUpperCase();
+      }
+    }
+  } catch (e) {
+    // Ignore API error and use coordinate fallback below
+  }
+  return getOceanOrSea(lat, lon);
 };
 
 export default function ISSTracker() {
@@ -235,15 +329,20 @@ export default function ISSTracker() {
                 city: cityLoc.toUpperCase(),
               });
             } else {
+              const waterBody = await resolveMarineLocation(
+                data.latitude,
+                data.longitude
+              );
               setIssGroundTrack({
                 country: 'OCEAN',
-                city: 'INTERNATIONAL WATERS',
+                city: waterBody,
               });
             }
           } catch (e) {
+            const waterBody = getOceanOrSea(data.latitude, data.longitude);
             setIssGroundTrack({
               country: 'OCEAN',
-              city: 'INTERNATIONAL WATERS',
+              city: waterBody,
             });
           }
         }
@@ -741,7 +840,7 @@ function PassMapModal({ pass, userLoc, onClose }) {
               Local Orbit Sighting Breakdown
             </h3>
             <span className="text-white/50 text-[10px] font-mono uppercase tracking-widest">
-              {userLoc.name} • {pass.date}
+              {userLoc.name} — {pass.date}
             </span>
           </div>
           <button
