@@ -13,7 +13,6 @@ import SelectMenu from './SelectMenu';
 // --- MAIN APP COMPONENT ---
 export default function App() {
   return (
-    /* “font-sans” has been removed so that index.css automatically uses “Space Meatball” */
     <div className="min-h-screen bg-[#020617] text-slate-100 selection:bg-blue-500/30 overflow-x-hidden">
       <ShootingStarBackground>
         {/* --- HERO SECTION --- */}
