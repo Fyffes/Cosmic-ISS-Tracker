@@ -52,11 +52,12 @@
 
 ---
 
-## Getting Started (Local Development)
+## Getting Started 
 
-Users can access the hosted application directly in any modern web browser. To run and test the application locally in your browser, follow these steps:
+* Step 1: You need to click on this link, to get to the website: [Cosmic ISS Tracker](https://cosmic-iss-tracker.netlify.app/)
+* Step 2: Scroll down to a small ISS with a navigation menu. Click on `ISS Tracker` there.
+* Step 3: Go to the `Enter your City...` field, click in the field and type in your city.
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/your-username/cosmic-iss-tracker.git](https://github.com/your-username/cosmic-iss-tracker.git)
-   cd cosmic-iss-tracker
+That's it. The tracker will now calculate when the ISS will next pass over your location so you can see it. Don't forget to scroll down past the tracker—there's a bit more information about the ISS waiting for you there.
+
+**Have Fun :D**
