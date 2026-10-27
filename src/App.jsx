@@ -89,18 +89,13 @@ export default function App() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 px-2">
-              <ContactLink
-                href="mailto:contact@fyffes.me"
-                icon={<Mail size={20} />}
-                label="Email"
-                value="contact@fyffes.me"
-              />
+            <div className="flex flex-col items-center justify-center w-full px-1">
               <ContactLink
                 href="https://discord.com/users/921739306199027793"
-                icon={<MessageSquare size={20} />}
+                icon={<MessageSquare size={36} />}
                 label="Discord"
                 value="Direct Message"
+                className="w-full max-w-sm text-center justify-center mx-auto"
               />
             </div>
           </section>
