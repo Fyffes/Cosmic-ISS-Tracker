@@ -79,29 +79,48 @@ export default function ISSView() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
+          whileHover={{
+            scale: 1.03,
+            zIndex: 10,
+            transition: { duration: 0.15 },
+          }}
           onClick={() => setSelectedImage(mainImage)}
-          className="lg:col-span-3 relative rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_40px_rgba(0,255,204,0.05)] bg-slate-900/50 group cursor-pointer"
+          className="lg:col-span-3 relative rounded-3xl border border-white/10 shadow-[0_0_40px_rgba(0,255,204,0.05)] bg-slate-900/50 group cursor-pointer overflow-visible"
         >
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#00ffcc]/5 to-transparent pointer-events-none z-10" />
-
-          <img
-            src={mainImage.src}
-            alt={mainImage.alt}
-            className="w-full h-[400px] md:h-[600px] object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-
-          {/* Hover Zoom Overlay */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
-            <div className="flex items-center gap-2 bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#00ffcc]/50 text-[#00ffcc] font-mono text-xs tracking-wider uppercase">
-              <ZoomIn size={16} />
-              <span>Click to Enlarge</span>
+          {/* THE PIN (Yellow Star) - Im Vordergrund zentriert */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+            <div className="relative flex items-center justify-center w-6 h-6">
+              <div className="absolute w-4 h-4 bg-[#ffd700] blur-[6px] rounded-full opacity-60" />
+              <Star
+                size={18}
+                fill="#ffd700"
+                className="text-[#ffd700] drop-shadow-md relative z-10"
+              />
             </div>
           </div>
 
-          <div className="absolute bottom-6 left-6 z-20 backdrop-blur-md bg-black/40 border border-white/10 px-4 py-2 rounded-xl pointer-events-none">
-            <span className="text-slate-200 font-mono text-[10px] uppercase tracking-widest">
-              {mainImage.label}
-            </span>
+          <div className="relative w-full h-full rounded-3xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#00ffcc]/5 to-transparent pointer-events-none z-10" />
+
+            <img
+              src={mainImage.src}
+              alt={mainImage.alt}
+              className="w-full h-[400px] md:h-[600px] object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+
+            {/* Hover Zoom Overlay */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
+              <div className="flex items-center gap-2 bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#00ffcc]/50 text-[#00ffcc] font-mono text-xs tracking-wider uppercase">
+                <ZoomIn size={16} />
+                <span>Click to Enlarge</span>
+              </div>
+            </div>
+
+            <div className="absolute bottom-6 left-6 z-20 backdrop-blur-md bg-black/40 border border-white/10 px-4 py-2 rounded-xl pointer-events-none">
+              <span className="text-slate-200 font-mono text-[10px] uppercase tracking-widest">
+                {mainImage.label}
+              </span>
+            </div>
           </div>
         </motion.div>
 
