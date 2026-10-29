@@ -3,59 +3,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as satellite from 'satellite.js';
 import Space from './Space';
 
-// --- Astronomical & Geographical Helpers ---
-const getSunElevation = (date, lat, lon) => {
-  const rad = Math.PI / 180;
+const sunEl = (d, lat, lon) => {
   const days =
-    (date.getTime() - new Date(Date.UTC(2000, 0, 1, 12, 0, 0)).getTime()) /
+    (d.getTime() - new Date(Date.UTC(2000, 0, 1, 12, 0, 0)).getTime()) /
     86400000.0;
-  const L = (280.46 + 0.9856474 * days) % 360;
+  const r = Math.PI / 180;
   const g = (357.528 + 0.9856003 * days) % 360;
-  const lambda = L + 1.915 * Math.sin(g * rad) + 0.02 * Math.sin(2 * g * rad);
-  const epsilon = 23.439 - 0.0000004 * days;
+  const L = (280.46 + 0.9856474 * days) % 360;
+  const eps = 23.439 - 0.0000004 * days;
+  const lam = L + 1.915 * Math.sin(g * r) + 0.02 * Math.sin(2 * g * r);
 
-  const dec = Math.asin(Math.sin(epsilon * rad) * Math.sin(lambda * rad));
+  const dec = Math.asin(Math.sin(eps * r) * Math.sin(lam * r));
   const ra = Math.atan2(
-    Math.cos(epsilon * rad) * Math.sin(lambda * rad),
-    Math.cos(lambda * rad)
+    Math.cos(eps * r) * Math.sin(lam * r),
+    Math.cos(lam * r)
   );
-
   const gmst = (18.697374558 + 24.06570982441908 * days) % 24;
-  const lmst = (gmst * 15 + lon) * rad;
-  const ha = lmst - ra;
+  const ha = (gmst * 15 + lon) * r - ra;
 
-  const el = Math.asin(
-    Math.sin(lat * rad) * Math.sin(dec) +
-      Math.cos(lat * rad) * Math.cos(dec) * Math.cos(ha)
+  return (
+    Math.asin(
+      Math.sin(lat * r) * Math.sin(dec) +
+        Math.cos(lat * r) * Math.cos(dec) * Math.cos(ha)
+    ) / r
   );
-  return el / rad;
 };
 
-const getCompassDirection = (azimuth) => {
-  const directions = [
-    'N',
-    'NNE',
-    'NE',
-    'ENE',
-    'E',
-    'ESE',
-    'SE',
-    'SSE',
-    'S',
-    'SSW',
-    'SW',
-    'WSW',
-    'W',
-    'WNW',
-    'NW',
-    'NNW',
-  ];
-  return directions[Math.round(azimuth / 22.5) % 16];
-};
-
-// Coordinate-based fallback for exact Seas, Gulfs, Bays, and Oceans
-const getOceanOrSea = (lat, lon) => {
-  // 1. Check specific marginal seas, gulfs, and bays first
+const getSea = (lat, lon) => {
   if (
     lat >= 30 &&
     lat <= 46 &&
@@ -96,55 +70,19 @@ const getOceanOrSea = (lat, lon) => {
   if (lat >= -5 && lat <= 6 && lon >= -10 && lon <= 10) return 'GULF OF GUINEA';
   if (lat >= -63 && lat <= -52 && lon >= -70 && lon <= -25) return 'SCOTIA SEA';
 
-  // 2. Fallback to the 5 major Oceans (with North/South hemisphere split)
   if (lat > 66.5) return 'ARCTIC OCEAN';
   if (lat < -60) return 'SOUTHERN OCEAN';
+  if (lon >= 20 && lon <= 146.5 && lat <= 30) return 'INDIAN OCEAN';
 
-  // Indian Ocean boundaries (Cape Agulhas ~20°E to Tasmania ~146.5°E)
-  if (lon >= 20 && lon <= 146.5 && lat <= 30) {
-    return 'INDIAN OCEAN';
-  }
-
-  // Atlantic Ocean boundaries
-  const isNorthAtlantic =
+  const nAtl =
     lat >= 0 &&
     ((lat < 9 && lon >= -75 && lon < 20) ||
       (lat >= 9 && lat < 18 && lon >= -85 && lon < 20) ||
       (lat >= 18 && lon >= -98 && lon < 20));
-  const isSouthAtlantic = lat < 0 && lon >= -67.5 && lon < 20;
+  if (nAtl) return 'NORTH ATLANTIC OCEAN';
+  if (lat < 0 && lon >= -67.5 && lon < 20) return 'SOUTH ATLANTIC OCEAN';
 
-  if (isNorthAtlantic) return 'NORTH ATLANTIC OCEAN';
-  if (isSouthAtlantic) return 'SOUTH ATLANTIC OCEAN';
-
-  // Default to Pacific Ocean
   return lat >= 0 ? 'NORTH PACIFIC OCEAN' : 'SOUTH PACIFIC OCEAN';
-};
-
-// Fetch exact marine body via BigDataCloud with coordinate fallback
-const resolveMarineLocation = async (lat, lon) => {
-  try {
-    const res = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&localityLanguage=en`
-    );
-    const data = await res.json();
-    const informative = data?.localityInfo?.informative || [];
-
-    // Search from most specific to general for a water body
-    const marineKeywords =
-      /ocean|sea|gulf|bay|strait|channel|bight|sound|passage|basin/i;
-    for (let i = informative.length - 1; i >= 0; i--) {
-      const item = informative[i];
-      if (
-        marineKeywords.test(item.name || '') ||
-        marineKeywords.test(item.description || '')
-      ) {
-        return item.name.toUpperCase();
-      }
-    }
-  } catch (e) {
-    // Ignore API error and use coordinate fallback below
-  }
-  return getOceanOrSea(lat, lon);
 };
 
 export default function ISSTracker() {
@@ -154,47 +92,40 @@ export default function ISSTracker() {
     altitude: 0,
     velocity: 0,
   });
-  const [crew, setCrew] = useState([]);
   const [docked, setDocked] = useState([]);
-
-  // Structured State for smooth transitions
-  const [issGroundTrack, setIssGroundTrack] = useState({
+  const [crew, setCrew] = useState([]);
+  const [track, setTrack] = useState({
     country: 'SEARCHING SIGNAL...',
     city: 'LOCATING',
   });
+  const [loaded, setLoaded] = useState(false);
+  const [orbit, setOrbit] = useState([]);
 
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [orbitMapData, setOrbitMapData] = useState([]);
-
-  // Time & Location State
-  const [localTimeZone, setLocalTimeZone] = useState(
+  const [tz, setTz] = useState(
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
-  const [currentTimeDisplay, setCurrentTimeDisplay] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [userLoc, setUserLoc] = useState({
+  const [timeStr, setTimeStr] = useState('');
+  const [q, setQ] = useState('');
+  const [loc, setLoc] = useState({
     name: '',
     lat: null,
     lng: null,
     loading: false,
     error: '',
   });
-  const [upcomingPasses, setUpcomingPasses] = useState([]);
-  const [searchStatus, setSearchStatus] = useState('');
+  const [passes, setPasses] = useState([]);
+  const [status, setStatus] = useState('');
+  const [selPass, setSelPass] = useState(null);
 
-  // Interactive Pass Modal State
-  const [selectedPass, setSelectedPass] = useState(null);
+  const pTimes = [0, 0.05, 0.15, 1];
+  const pKeys = { scale: [1, 2.2, 2.2], opacity: [0, 1, 1, 0] };
+  const dur = 3;
 
-  const cycleDuration = 3;
-  const pulseKeyframes = { scale: [1, 2.2, 2.2], opacity: [0, 1, 1, 0] };
-  const pulseTimes = [0, 0.05, 0.15, 1];
-
-  // --- Dynamic Local Clock ---
   useEffect(() => {
-    const timer = setInterval(() => {
+    const t = setInterval(() => {
       try {
-        const timeString = new Date().toLocaleString('en-US', {
-          timeZone: localTimeZone,
+        const s = new Date().toLocaleString('en-US', {
+          timeZone: tz,
           weekday: 'short',
           month: 'short',
           day: '2-digit',
@@ -203,146 +134,143 @@ export default function ISSTracker() {
           second: '2-digit',
           timeZoneName: 'short',
         });
-        setCurrentTimeDisplay(timeString.toUpperCase());
+        setTimeStr(s.toUpperCase());
       } catch (e) {
-        setCurrentTimeDisplay('TIME SYNC ERROR');
+        setTimeStr('TIME SYNC ERROR');
       }
     }, 1000);
-    return () => clearInterval(timer);
-  }, [localTimeZone]);
+    return () => clearInterval(t);
+  }, [tz]);
 
-  // --- Map Drawing Data ---
-  const fetchMapOrbit = async () => {
+  const getOrbit = async () => {
     try {
-      const tleRes = await fetch(
+      const res = await fetch(
         'https://api.wheretheiss.at/v1/satellites/25544/tles'
       );
-      const tleData = await tleRes.json();
-      const satrec = satellite.twoline2satrec(tleData.line1, tleData.line2);
-
+      const d = await res.json();
+      const sat = satellite.twoline2satrec(d.line1, d.line2);
       const now = new Date();
-      const startMins = -46;
-      const endMins = 138;
-      const stepMins = 0.25;
+      const pts = [];
 
-      const rawPoints = [];
-      for (let i = startMins; i <= endMins; i += stepMins) {
-        const d = new Date(now.getTime() + i * 60000);
-        const positionAndVelocity = satellite.propagate(satrec, d);
+      for (let i = -46; i <= 138; i += 0.25) {
+        const t = new Date(now.getTime() + i * 60000);
+        const pv = satellite.propagate(sat, t);
+        if (!pv.position) continue;
 
-        if (!positionAndVelocity.position) continue;
+        const gd = satellite.eciToGeodetic(pv.position, satellite.gstime(t));
+        const lat = satellite.radiansToDegrees(gd.latitude);
+        const lng = satellite.radiansToDegrees(gd.longitude);
 
-        const gmst = satellite.gstime(d);
-        const positionGd = satellite.eciToGeodetic(
-          positionAndVelocity.position,
-          gmst
-        );
-
-        const lat = satellite.radiansToDegrees(positionGd.latitude);
-        const lng = satellite.radiansToDegrees(positionGd.longitude);
-
-        rawPoints.push({
-          lat: lat,
-          lng: lng,
+        pts.push({
+          lat,
+          lng,
           x: ((lng + 180) / 360) * 100,
           y: ((90 - lat) / 180) * 100,
         });
       }
 
-      const smoothedMapData = [];
-      for (let i = 0; i < rawPoints.length; i++) {
-        const current = rawPoints[i];
-        if (i > 0) {
-          const prev = rawPoints[i - 1];
-          if (prev.x > 90 && current.x < 10) {
-            const intersectY = prev.y + (current.y - prev.y) / 2;
-            smoothedMapData.push({ ...prev, x: 100, y: intersectY });
-            smoothedMapData.push({ ...current, x: 0, y: intersectY });
-          } else if (prev.x < 10 && current.x > 90) {
-            const intersectY = prev.y + (current.y - prev.y) / 2;
-            smoothedMapData.push({ ...prev, x: 0, y: intersectY });
-            smoothedMapData.push({ ...current, x: 100, y: intersectY });
+      // wrap around map edge
+      const out = [];
+      for (let idx = 0; idx < pts.length; idx = idx + 1) {
+        const cur = pts[idx];
+        if (idx > 0) {
+          const prev = pts[idx - 1];
+          if (prev.x > 90 && cur.x < 10) {
+            const iy = prev.y + (cur.y - prev.y) / 2;
+            out.push({ ...prev, x: 100, y: iy }, { ...cur, x: 0, y: iy });
+          } else if (prev.x < 10 && cur.x > 90) {
+            const iy = prev.y + (cur.y - prev.y) / 2;
+            out.push({ ...prev, x: 0, y: iy }, { ...cur, x: 100, y: iy });
           }
         }
-        smoothedMapData.push(current);
+        out.push(cur);
       }
-      setOrbitMapData(smoothedMapData);
+      setOrbit(out);
     } catch (e) {
       console.error('Failed to calculate orbit trajectory:', e);
     }
   };
 
-  // --- Live Data Loop ---
   useEffect(() => {
-    fetchMapOrbit();
-    const fetchData = async () => {
+    getOrbit();
+    const poll = async () => {
       try {
-        const issRes = await fetch(
+        const res = await fetch(
           'https://api.wheretheiss.at/v1/satellites/25544'
         );
-        if (!issRes.ok) return;
-        const data = await issRes.json();
+        if (!res.ok) return;
+        const val = await res.json();
 
-        if (data && data.latitude !== undefined) {
-          setIss(data);
-          setIsLoaded(true);
+        if (val && !(val.latitude === undefined)) {
+          setIss(val);
+          setLoaded(true);
 
           try {
-            const geoRes = await fetch(
-              `https://api.wheretheiss.at/v1/coordinates/${data.latitude.toFixed(4)},${data.longitude.toFixed(4)}`
+            const gRes = await fetch(
+              `https://api.wheretheiss.at/v1/coordinates/${val.latitude.toFixed(4)},${val.longitude.toFixed(4)}`
             );
-            const geoData = await geoRes.json();
-            const countryCode = geoData?.country_code;
+            const gd = await gRes.json();
+            const cc = gd?.country_code;
 
-            if (
-              countryCode &&
-              countryCode !== 'none' &&
-              !countryCode.includes('?')
-            ) {
-              let fullCountry = countryCode;
+            if (cc && cc !== 'none' && !cc.includes('?')) {
+              let cName = cc;
               try {
-                fullCountry =
+                cName =
                   new Intl.DisplayNames(['en'], { type: 'region' }).of(
-                    countryCode.toUpperCase()
-                  ) || countryCode;
+                    cc.toUpperCase()
+                  ) || cc;
               } catch (e) {}
 
-              let cityLoc = 'OVERLAND';
+              let city = 'OVERLAND';
               try {
-                const cityRes = await fetch(
-                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.latitude.toFixed(4)}&lon=${data.longitude.toFixed(4)}&zoom=8`
+                const cRes = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${val.latitude.toFixed(4)}&lon=${val.longitude.toFixed(4)}&zoom=8`
                 );
-                const cityData = await cityRes.json();
-                if (cityData?.address) {
-                  cityLoc =
-                    cityData.address.city ||
-                    cityData.address.town ||
-                    cityData.address.village ||
-                    cityData.address.county ||
-                    cityData.address.state ||
+                const cd = await cRes.json();
+                if (cd?.address) {
+                  city =
+                    cd.address.city ||
+                    cd.address.town ||
+                    cd.address.village ||
+                    cd.address.county ||
+                    cd.address.state ||
                     'OVERLAND';
                 }
               } catch (e) {}
 
-              setIssGroundTrack({
-                country: fullCountry.toUpperCase(),
-                city: cityLoc.toUpperCase(),
+              setTrack({
+                country: cName.toUpperCase(),
+                city: city.toUpperCase(),
               });
             } else {
-              const waterBody = await resolveMarineLocation(
-                data.latitude,
-                data.longitude
-              );
-              setIssGroundTrack({
+              let sea = null;
+              try {
+                const mRes = await fetch(
+                  `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${val.latitude.toFixed(4)}&longitude=${val.longitude.toFixed(4)}&localityLanguage=en`
+                );
+                const md = await mRes.json();
+                const info = md?.localityInfo?.informative || [];
+                const rx =
+                  /ocean|sea|gulf|bay|strait|channel|bight|sound|passage|basin/i;
+                for (let i = info.length - 1; i >= 0; i--) {
+                  if (
+                    rx.test(info[i].name || '') ||
+                    rx.test(info[i].description || '')
+                  ) {
+                    sea = info[i].name.toUpperCase();
+                    break;
+                  }
+                }
+              } catch (e) {}
+              setTrack({
                 country: 'OCEAN',
-                city: waterBody,
+                city: sea || getSea(val.latitude, val.longitude),
               });
             }
           } catch (e) {
-            const waterBody = getOceanOrSea(data.latitude, data.longitude);
-            setIssGroundTrack({
+            setTrack({
               country: 'OCEAN',
-              city: waterBody,
+              city: getSea(val.latitude, val.longitude),
             });
           }
         }
@@ -360,247 +288,234 @@ export default function ISSTracker() {
           .then((d) => setDocked(d?.spacecraft || []))
           .catch(() => {});
       } catch (e) {
-        setIssGroundTrack({ country: 'CONNECTION LOST', city: 'OFFLINE' });
+        setTrack({ country: 'CONNECTION LOST', city: 'OFFLINE' });
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 5000);
-    const orbitInterval = setInterval(fetchMapOrbit, 120000);
+    poll();
+    const t1 = setInterval(poll, 5000);
+    const t2 = setInterval(getOrbit, 120000);
     return () => {
-      clearInterval(interval);
-      clearInterval(orbitInterval);
+      clearInterval(t1);
+      clearInterval(t2);
     };
   }, []);
 
-  // --- Visible Pass Sighting Logic ---
-  const handleSearch = async (e) => {
+  const onSearch = async (e) => {
     e.preventDefault();
-    if (!searchInput.trim()) return;
-    setUserLoc((prev) => ({ ...prev, loading: true, error: '' }));
-    setUpcomingPasses([]);
+    if (!q.trim()) return;
+    setLoc((p) => ({ ...p, loading: true, error: '' }));
+    setPasses([]);
 
     try {
-      setSearchStatus('Resolving location coordinates...');
-
+      setStatus('Resolving location coordinates...');
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchInput)}`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`
       );
-      const data = await res.json();
+      const arr = await res.json();
 
-      if (!data || data.length === 0) {
-        setUserLoc((prev) => ({
-          ...prev,
-          loading: false,
-          error: 'Location not found',
-        }));
-        setSearchStatus('');
+      if (!arr || arr.length === 0) {
+        setLoc((p) => ({ ...p, loading: false, error: 'Location not found' }));
+        setStatus('');
         return;
       }
 
-      const uLat = parseFloat(data[0].lat);
-      const uLng = parseFloat(data[0].lon);
-      const observerGd = {
+      const uLat = parseFloat(arr[0].lat);
+      const uLng = parseFloat(arr[0].lon);
+      const obs = {
         longitude: satellite.degreesToRadians(uLng),
         latitude: satellite.degreesToRadians(uLat),
         height: 0,
       };
 
-      let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      let nextTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       try {
         const tzRes = await fetch(
           `https://api.wheretheiss.at/v1/coordinates/${uLat.toFixed(4)},${uLng.toFixed(4)}`
         );
         const tzData = await tzRes.json();
-        if (tzData && tzData.timezone_id) tz = tzData.timezone_id;
+        if (tzData && tzData.timezone_id) nextTz = tzData.timezone_id;
       } catch (err) {}
 
-      setLocalTimeZone(tz);
-      setUserLoc({
+      setTz(nextTz);
+      setLoc({
         lat: uLat,
         lng: uLng,
-        name: data[0].display_name.split(',')[0],
+        name: arr[0].display_name.split(',')[0],
         loading: true,
         error: '',
       });
-      setSearchStatus('Computing 5-day visible orbital trajectories...');
+      setStatus('Computing 5-day visible orbital trajectories...');
 
       const tleRes = await fetch(
         'https://api.wheretheiss.at/v1/satellites/25544/tles'
       );
-      const tleData = await tleRes.json();
-      const satrec = satellite.twoline2satrec(tleData.line1, tleData.line2);
+      const tle = await tleRes.json();
+      const sat = satellite.twoline2satrec(tle.line1, tle.line2);
 
-      const passes = [];
-      let currentPass = null;
+      const raw = [];
+      let cur = null;
       const now = new Date();
 
-      for (let i = 0; i < 5 * 24 * 60; i++) {
+      for (let i = 0; i < 5 * 24 * 60; i = i + 1) {
         const d = new Date(now.getTime() + i * 60000);
-        const positionAndVelocity = satellite.propagate(satrec, d);
-        if (!positionAndVelocity.position) continue;
+        const pv = satellite.propagate(sat, d);
+        if (!pv.position) continue;
 
         const gmst = satellite.gstime(d);
-        const positionGd = satellite.eciToGeodetic(
-          positionAndVelocity.position,
-          gmst
+        const gd = satellite.eciToGeodetic(pv.position, gmst);
+        const look = satellite.ecfToLookAngles(
+          obs,
+          satellite.eciToEcf(pv.position, gmst)
         );
-        const issLat = satellite.radiansToDegrees(positionGd.latitude);
-        const issLng = satellite.radiansToDegrees(positionGd.longitude);
 
-        const positionEcf = satellite.eciToEcf(
-          positionAndVelocity.position,
-          gmst
+        const el = satellite.radiansToDegrees(look.elevation);
+        const az = satellite.radiansToDegrees(look.azimuth);
+        const oSun = sunEl(d, uLat, uLng);
+        const iSun = sunEl(
+          d,
+          satellite.radiansToDegrees(gd.latitude),
+          satellite.radiansToDegrees(gd.longitude)
         );
-        const lookAngles = satellite.ecfToLookAngles(observerGd, positionEcf);
 
-        const elevation = satellite.radiansToDegrees(lookAngles.elevation);
-        const azimuth = satellite.radiansToDegrees(lookAngles.azimuth);
-
-        const observerSun = getSunElevation(d, uLat, uLng);
-        const issSun = getSunElevation(d, issLat, issLng);
-
-        const isVisible = elevation >= 10 && observerSun <= -6 && issSun >= -21;
-
-        if (isVisible) {
-          if (!currentPass) {
-            currentPass = {
+        if (el >= 10 && oSun <= -6 && iSun >= -21) {
+          if (!cur) {
+            cur = {
               startTime: d,
-              startAz: azimuth,
-              maxElevation: elevation,
-              maxAz: azimuth,
+              startAz: az,
+              maxElevation: el,
+              maxAz: az,
               points: 1,
             };
           }
-          currentPass.maxElevation = Math.max(
-            currentPass.maxElevation,
-            elevation
-          );
-          currentPass.endTime = d;
-          currentPass.endAz = azimuth;
-          currentPass.points++;
-        } else {
-          if (currentPass) {
-            if (currentPass.points >= 2 && currentPass.maxElevation >= 10) {
-              passes.push(currentPass);
-            }
-            currentPass = null;
-          }
+          if (el > cur.maxElevation) cur.maxElevation = el;
+          cur.endTime = d;
+          cur.endAz = az;
+          cur.points = cur.points + 1;
+        } else if (cur) {
+          if (cur.points >= 2 && cur.maxElevation >= 10) raw.push(cur);
+          cur = null;
         }
       }
 
-      if (
-        currentPass &&
-        currentPass.points >= 2 &&
-        currentPass.maxElevation >= 10
-      ) {
-        passes.push(currentPass);
-      }
+      if (cur && cur.points >= 2 && cur.maxElevation >= 10) raw.push(cur);
 
-      const formattedPasses = passes
-        .filter((pass) => pass.maxElevation >= 10)
-        .map((pass) => {
-          const durationSec = Math.round(
-            (pass.endTime.getTime() - pass.startTime.getTime()) / 1000
+      const dirs = [
+        'N',
+        'NNE',
+        'NE',
+        'ENE',
+        'E',
+        'ESE',
+        'SE',
+        'SSE',
+        'S',
+        'SSW',
+        'SW',
+        'WSW',
+        'W',
+        'WNW',
+        'NW',
+        'NNW',
+      ];
+
+      const out = raw
+        .filter((p) => p.maxElevation >= 10)
+        .map((p) => {
+          const sec = Math.round(
+            (p.endTime.getTime() - p.startTime.getTime()) / 1000
           );
-          const durMin = Math.floor(durationSec / 60);
-          const durSec = durationSec % 60;
-          const durationText =
-            durMin > 0 ? `${durMin}m ${durSec}s` : `${durSec}s`;
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
 
-          let quality = 'Low Horizon Pass';
-          if (pass.maxElevation >= 50) quality = 'Excellent (Very Bright)';
-          else if (pass.maxElevation >= 25) quality = 'Good Visibility';
+          let qStr = 'Low Horizon Pass';
+          if (p.maxElevation >= 50) qStr = 'Excellent (Very Bright)';
+          else if (p.maxElevation >= 25) qStr = 'Good Visibility';
 
-          const trajectory = [];
+          const traj = [];
           const ux = (uLng + 180) / 3.6;
 
           for (
-            let t = pass.startTime.getTime();
-            t <= pass.endTime.getTime();
+            let t = p.startTime.getTime();
+            t <= p.endTime.getTime();
             t += 10000
           ) {
             const d = new Date(t);
-            const pv = satellite.propagate(satrec, d);
+            const pv = satellite.propagate(sat, d);
             if (pv.position) {
-              const gmst = satellite.gstime(d);
-              const gd = satellite.eciToGeodetic(pv.position, gmst);
+              const gd = satellite.eciToGeodetic(
+                pv.position,
+                satellite.gstime(d)
+              );
               const tLat = satellite.radiansToDegrees(gd.latitude);
               const tLng = satellite.radiansToDegrees(gd.longitude);
 
               let x = (tLng + 180) / 3.6;
               const y = (90 - tLat) / 1.8;
-
               if (x - ux > 50) x -= 100;
               if (x - ux < -50) x += 100;
 
-              trajectory.push({ x, y, lat: tLat, lng: tLng });
+              traj.push({ x, y, lat: tLat, lng: tLng });
             }
           }
 
           return {
-            date: pass.startTime.toLocaleDateString('en-US', {
-              timeZone: tz,
+            date: p.startTime.toLocaleDateString('en-US', {
+              timeZone: nextTz,
               month: 'short',
               day: 'numeric',
               weekday: 'short',
             }),
-            startTime: pass.startTime.toLocaleTimeString('en-US', {
-              timeZone: tz,
+            startTime: p.startTime.toLocaleTimeString('en-US', {
+              timeZone: nextTz,
               hour: '2-digit',
               minute: '2-digit',
             }),
-            endTime: pass.endTime.toLocaleTimeString('en-US', {
-              timeZone: tz,
+            endTime: p.endTime.toLocaleTimeString('en-US', {
+              timeZone: nextTz,
               hour: '2-digit',
               minute: '2-digit',
             }),
-            durationText,
-            quality,
-            startDir: getCompassDirection(pass.startAz),
-            endDir: getCompassDirection(pass.endAz),
-            maxElevation: Math.round(pass.maxElevation),
-            trajectory,
+            durationText: m > 0 ? `${m}m ${s}s` : `${s}s`,
+            quality: qStr,
+            startDir: dirs[Math.round(p.startAz / 22.5) % 16],
+            endDir: dirs[Math.round(p.endAz / 22.5) % 16],
+            maxElevation: Math.round(p.maxElevation),
+            trajectory: traj,
           };
         });
 
-      setUpcomingPasses(formattedPasses);
-      setUserLoc((prev) => ({ ...prev, loading: false }));
-      setSearchStatus('');
+      setPasses(out);
+      setLoc((p) => ({ ...p, loading: false }));
+      setStatus('');
     } catch (err) {
-      setUserLoc((prev) => ({
-        ...prev,
+      setLoc((p) => ({
+        ...p,
         loading: false,
         error: 'Pass calculations failed',
       }));
-      setSearchStatus('');
+      setStatus('');
     }
   };
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col gap-4 md:gap-6 relative z-10 font-sans">
-      {/* MAP SECTION */}
       <div className="relative w-full aspect-[2/1] bg-black/20 rounded-[24px] md:rounded-[32px] border border-white/10 overflow-hidden shadow-2xl">
         <Space
           lat={iss?.latitude || 0}
           lng={iss?.longitude || 0}
-          isLoaded={isLoaded}
-          pulseKeyframes={pulseKeyframes}
-          pulseTimes={pulseTimes}
-          mapTiming={{
-            duration: cycleDuration,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-          orbitData={orbitMapData}
-          userLoc={userLoc}
+          isLoaded={loaded}
+          pulseKeyframes={pKeys}
+          pulseTimes={pTimes}
+          mapTiming={{ duration: dur, repeat: Infinity, ease: 'linear' }}
+          orbitData={orbit}
+          userLoc={loc}
         />
         <div className="absolute top-4 md:top-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-xl px-4 md:px-6 py-2 rounded-full border border-white/10 font-mono font-semibold text-[9px] md:text-[11px] text-white z-30 tracking-[0.15em] md:tracking-widest shadow-2xl whitespace-nowrap">
-          {currentTimeDisplay || 'CONNECTING...'}
+          {timeStr || 'CONNECTING...'}
         </div>
       </div>
 
-      {/* LIVE STATS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <StatBox
           label="ALTITUDE"
@@ -622,21 +537,19 @@ export default function ISSTracker() {
         />
       </div>
 
-      {/* LIFETIME HISTORICAL STATS */}
       <HistoricalStats />
 
-      {/* LIVE LOCATION BAR (Ground Track) */}
       <div className="w-full flex flex-col md:flex-row justify-between items-center p-4 md:p-5 bg-white/[0.02] border border-white/5 rounded-2xl font-mono text-[9px] md:text-[10px] gap-4 backdrop-blur-md">
         <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
           <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
             <motion.div
-              animate={pulseKeyframes}
+              animate={pKeys}
               transition={{
-                duration: cycleDuration,
+                duration: dur,
                 repeat: Infinity,
                 ease: 'linear',
                 delay: 0.5,
-                times: pulseTimes,
+                times: pTimes,
               }}
               className="absolute w-full h-full bg-white/40 rounded-full"
             />
@@ -648,10 +561,9 @@ export default function ISSTracker() {
               Ground Track:
             </span>
 
-            {/* Fluid animated container with smooth transitions */}
             <AnimatePresence mode="wait">
               <motion.div
-                key={`${issGroundTrack.country}-${issGroundTrack.city}`}
+                key={`${track.country}-${track.city}`}
                 initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -3 }}
@@ -659,11 +571,11 @@ export default function ISSTracker() {
                 className="flex items-center gap-1.5 truncate"
               >
                 <span className="text-white font-bold tracking-tight">
-                  {issGroundTrack.country}
+                  {track.country}
                 </span>
                 <span className="text-[#00ffcc] font-bold mx-0.5">/</span>
                 <span className="text-white/80 font-semibold tracking-tight">
-                  {issGroundTrack.city}
+                  {track.city}
                 </span>
               </motion.div>
             </AnimatePresence>
@@ -677,44 +589,39 @@ export default function ISSTracker() {
         </div>
       </div>
 
-      {/* PREDICTION SECTION */}
       <div className="w-full flex flex-col gap-4 p-4 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-md">
-        <form
-          onSubmit={handleSearch}
-          className="flex flex-col md:flex-row gap-3"
-        >
+        <form onSubmit={onSearch} className="flex flex-col md:flex-row gap-3">
           <input
             type="text"
             placeholder="Enter a city to compute exact visibility times..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
             className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-white/40 transition-colors placeholder:text-white/30 font-sans"
           />
           <button
             type="submit"
-            disabled={userLoc.loading || !searchInput.trim()}
+            disabled={loc.loading || !q.trim()}
             className="bg-[#00ffcc]/10 hover:bg-[#00ffcc]/20 border border-[#00ffcc]/30 disabled:opacity-50 text-[#00ffcc] px-6 py-3 rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider transition-colors h-full flex-shrink-0 font-mono"
           >
-            {userLoc.loading ? 'Calculating...' : 'Find Passes'}
+            {loc.loading ? 'Calculating...' : 'Find Passes'}
           </button>
         </form>
 
         <div className="flex flex-col mt-2 min-h-[60px] justify-center">
-          {userLoc.error ? (
+          {loc.error ? (
             <span className="text-red-400 text-xs font-mono uppercase tracking-widest">
-              {userLoc.error}
+              {loc.error}
             </span>
-          ) : searchStatus ? (
+          ) : status ? (
             <span className="text-white/60 text-xs font-mono uppercase tracking-widest animate-pulse">
-              {searchStatus}
+              {status}
             </span>
-          ) : userLoc.lat !== null ? (
+          ) : !(loc.lat === null) ? (
             <div className="flex flex-col animate-fadeIn">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 bg-[#00ffcc]/5 border border-[#00ffcc]/20 p-3 rounded-xl">
                 <span className="text-[#00ffcc] font-mono text-[11px] uppercase tracking-widest font-bold">
                   Naked-Eye Sightings for{' '}
-                  <span className="underline">{userLoc.name}</span> (Next 5
-                  Days)
+                  <span className="underline">{loc.name}</span> (Next 5 Days)
                 </span>
                 <span className="text-white/80 font-sans text-[10px] md:text-[11px] tracking-wider flex items-center gap-1.5 font-medium">
                   <span className="animate-bounce">👆</span> Click any pass
@@ -722,25 +629,25 @@ export default function ISSTracker() {
                 </span>
               </div>
 
-              {upcomingPasses.length > 0 ? (
+              {passes.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {upcomingPasses.map((pass, i) => (
+                  {passes.map((p, idx) => (
                     <div
-                      key={i}
-                      onClick={() => setSelectedPass(pass)}
+                      key={idx}
+                      onClick={() => setSelPass(p)}
                       className="bg-black/50 p-4 rounded-xl border border-white/10 hover:border-[#00ffcc] hover:bg-[#00ffcc]/10 transition-all duration-300 flex flex-col justify-between group cursor-pointer hover:scale-[1.02] active:scale-95 shadow-lg"
                     >
                       <div>
                         <div className="flex justify-between items-start mb-1">
                           <span className="text-[#00ffcc] text-sm font-mono font-bold tracking-tight group-hover:text-white transition-colors">
-                            {pass.startTime} - {pass.endTime}
+                            {p.startTime} - {p.endTime}
                           </span>
                           <span className="text-white/40 text-[9px] font-mono bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                            {pass.durationText}
+                            {p.durationText}
                           </span>
                         </div>
                         <div className="text-white/80 text-[10px] uppercase tracking-wider mb-3 font-mono font-bold">
-                          {pass.date}
+                          {p.date}
                         </div>
                       </div>
 
@@ -748,19 +655,19 @@ export default function ISSTracker() {
                         <div className="flex justify-between text-white/60">
                           <span>Quality:</span>
                           <strong className="text-[#00ffcc]">
-                            {pass.quality}
+                            {p.quality}
                           </strong>
                         </div>
                         <div className="flex justify-between text-white/60">
                           <span>Path:</span>
                           <strong className="text-white">
-                            {pass.startDir} ➔ {pass.endDir}
+                            {p.startDir} ➔ {p.endDir}
                           </strong>
                         </div>
                         <div className="flex justify-between text-white/60">
                           <span>Peak Elevation:</span>
                           <strong className="text-white">
-                            {pass.maxElevation}°
+                            {p.maxElevation}°
                           </strong>
                         </div>
                       </div>
@@ -774,8 +681,8 @@ export default function ISSTracker() {
               ) : (
                 <div className="flex flex-col gap-1 p-4 bg-black/20 rounded-xl border border-white/5 text-center">
                   <span className="text-white/60 font-mono text-[11px] uppercase tracking-widest">
-                    No naked-eye visible passes detected over {userLoc.name} in
-                    the next 5 days.
+                    No naked-eye visible passes detected over {loc.name} in the
+                    next 5 days.
                   </span>
                   <span className="text-white/30 font-sans text-[10px]">
                     (ISS passes occurring during daylight or low horizon
@@ -792,13 +699,12 @@ export default function ISSTracker() {
         </div>
       </div>
 
-      {/* SIGHTING MAP MODAL */}
       <AnimatePresence>
-        {selectedPass && (
+        {selPass && (
           <PassMapModal
-            pass={selectedPass}
-            userLoc={userLoc}
-            onClose={() => setSelectedPass(null)}
+            pass={selPass}
+            userLoc={loc}
+            onClose={() => setSelPass(null)}
           />
         )}
       </AnimatePresence>
@@ -806,17 +712,15 @@ export default function ISSTracker() {
   );
 }
 
-// --- Dynamic Pass Trajectory Modal Component ---
 function PassMapModal({ pass, userLoc, onClose }) {
   if (!pass || !pass.trajectory || pass.trajectory.length === 0) return null;
 
+  const V = 12;
   const ux = ((userLoc.lng + 180) / 360) * 100;
   const uy = ((90 - userLoc.lat) / 180) * 100;
-  const V = 12;
-
-  const startPt = pass.trajectory[0];
-  const endPt = pass.trajectory[pass.trajectory.length - 1];
-  const mapImage =
+  const p0 = pass.trajectory[0];
+  const p1 = pass.trajectory[pass.trajectory.length - 1];
+  const img =
     'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_01deg.jpg';
 
   return (
@@ -857,7 +761,7 @@ function PassMapModal({ pass, userLoc, onClose }) {
             className="w-full h-full object-cover select-none pointer-events-none opacity-90"
           >
             <image
-              href={mapImage}
+              href={img}
               x="-100"
               y="0"
               width="100"
@@ -866,7 +770,7 @@ function PassMapModal({ pass, userLoc, onClose }) {
               opacity="0.7"
             />
             <image
-              href={mapImage}
+              href={img}
               x="0"
               y="0"
               width="100"
@@ -875,7 +779,7 @@ function PassMapModal({ pass, userLoc, onClose }) {
               opacity="0.7"
             />
             <image
-              href={mapImage}
+              href={img}
               x="100"
               y="0"
               width="100"
@@ -894,22 +798,21 @@ function PassMapModal({ pass, userLoc, onClose }) {
             />
 
             <circle
-              cx={startPt.x}
-              cy={startPt.y}
+              cx={p0.x}
+              cy={p0.y}
               r={V * 0.03}
               fill="#10b981"
               stroke="#05070a"
               strokeWidth={V * 0.005}
             />
             <circle
-              cx={endPt.x}
-              cy={endPt.y}
+              cx={p1.x}
+              cy={p1.y}
               r={V * 0.03}
               fill="#ef4444"
               stroke="#05070a"
               strokeWidth={V * 0.005}
             />
-
             <circle cx={ux} cy={uy} r={V * 0.02} fill="#fff" />
             <circle
               cx={ux}
@@ -986,26 +889,22 @@ function PassMapModal({ pass, userLoc, onClose }) {
   );
 }
 
-// --- Historical Stats Component ---
 function HistoricalStats() {
-  const [stats, setStats] = useState({ orbits: 0, days: 0 });
+  const [st, setSt] = useState({ orbits: 0, days: 0 });
 
   useEffect(() => {
-    const calculateStats = () => {
+    const calc = () => {
       const now = Date.now();
-      const launchDate = new Date('1998-11-20T06:40:00Z').getTime();
-      const totalOrbits = Math.floor((now - launchDate) / (92.68 * 60 * 1000));
-      const occupancyDate = new Date('2000-11-02T09:21:00Z').getTime();
-      const totalDaysInhabited = Math.floor(
-        (now - occupancyDate) / (24 * 60 * 60 * 1000)
-      );
-
-      setStats({ orbits: totalOrbits, days: totalDaysInhabited });
+      const t0 = new Date('1998-11-20T06:40:00Z').getTime();
+      const t1 = new Date('2000-11-02T09:21:00Z').getTime();
+      setSt({
+        orbits: Math.floor((now - t0) / (92.68 * 60 * 1000)),
+        days: Math.floor((now - t1) / 86400000),
+      });
     };
-
-    calculateStats();
-    const interval = setInterval(calculateStats, 60000);
-    return () => clearInterval(interval);
+    calc();
+    const id = setInterval(calc, 60000);
+    return () => clearInterval(id);
   }, []);
 
   return (
@@ -1020,11 +919,11 @@ function HistoricalStats() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <StatBox
           label="TOTAL ORBITS"
-          value={stats.orbits.toLocaleString('en-US')}
+          value={st.orbits.toLocaleString('en-US')}
         />
         <StatBox
           label="DAYS INHABITED"
-          value={stats.days.toLocaleString('en-US')}
+          value={st.days.toLocaleString('en-US')}
         />
         <StatBox label="TOTAL VISITORS" value="280+" />
         <StatBox label="EXPEDITIONS" value="76" />
@@ -1033,7 +932,6 @@ function HistoricalStats() {
   );
 }
 
-// --- Reusable UI Elements ---
 function StatBox({ label, value }) {
   return (
     <div className="bg-black/20 border border-white/5 p-4 md:p-6 rounded-2xl text-center hover:bg-white/[0.04] transition-colors group cursor-default">
@@ -1065,12 +963,12 @@ function ListBox({ label, count, items }) {
         </p>
         <div className="overflow-y-auto scrollbar-hide space-y-1">
           {items.length > 0 ? (
-            items.map((item, i) => (
+            items.map((val, i) => (
               <p
                 key={i}
                 className="text-[9px] md:text-[10px] font-sans text-white/70 uppercase tracking-tight truncate"
               >
-                • {item}
+                • {val}
               </p>
             ))
           ) : (
