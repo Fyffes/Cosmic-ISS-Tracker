@@ -27,13 +27,13 @@ The ***Cosmic ISS Tracker*** is a web app built with React. It lets users watch 
 
 ## Key Features
 
-* **Browser-Based Live Map (`Space` Component):** Shows the position of the ISS, the chosen observer location and the ground track from 46 minutes ago to 138 minutes ahead. The map uses a high‑resolution NASA night image. Runs directly in the browser.
+* **Browser-Based Live Map:** Shows the position of the ISS, the chosen observer location and the ground track from 46 minutes ago to 138 minutes ahead. The map uses a high‑resolution NASA night image. Runs directly in the browser.
 
 * **Crew and Docked Spacecraft List:** Shows how many astronauts are on the station and lists every spacecraft that is docked. Hover over an entry to see the crew and vehicle names.
 
 * **Mission History Tracker:** Keeps a count of how many orbits the ISS has completed since its launch on November 20 1998 using a 92.68‑minute orbit period. It also shows how consecutive days the station has been occupied since November 2 2000 and lists historic visitor (280+) and expedition (76) numbers.
 
-* **. Photos:** Open the "Little ISS" part of the Tracker menu to read about the ISS and its parts and when they started working there. A few photos appear in the "Learn About the ISS" section.
+* **Photos:** Open the "Little ISS" part of the Tracker menu to read about the ISS and its parts and when they started working there. A few photos appear in the "Learn About the ISS" section.
 
 ---
 
