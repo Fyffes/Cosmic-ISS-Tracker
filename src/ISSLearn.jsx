@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Expanded Interactive ISS Modules Hotspot Data
-const ISS_MODULES = [
+const cfg = [
   {
     id: 'port-solar-arrays',
     name: 'Port Solar Array Wings',
@@ -178,15 +177,35 @@ const ISS_MODULES = [
 export default function ISSLearn({
   imagePath = '/assets/ISS Dark Transparent.jpg',
 }) {
-  const [selectedModule, setSelectedModule] = useState(null);
-  const [hoveredModule, setHoveredModule] = useState(null);
+  const [hov, setHov] = useState(null);
+  const [sel, setSel] = useState(null);
+
+  const out = [];
+  if (sel) {
+    const arr = Object.entries(sel.specs);
+    for (let idx = 0; idx < arr.length; idx = idx + 1) {
+      const tmp = arr[idx];
+      out.push(
+        <div
+          key={idx}
+          className="bg-black/30 border border-white/5 p-4 rounded-2xl"
+        >
+          <p className="text-[#00ffcc]/60 font-mono text-[9px] uppercase tracking-widest mb-1">
+            {tmp[0]}
+          </p>
+          <p className="text-slate-200 text-xs sm:text-sm font-medium tracking-wide">
+            {tmp[1]}
+          </p>
+        </div>
+      );
+    }
+  }
 
   return (
     <section
       id="iss-learn"
       className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-20 text-white z-30"
     >
-      {/* SECTION HEADER */}
       <div className="text-center mb-12 md:mb-20">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -209,7 +228,6 @@ export default function ISSLearn({
         </motion.h2>
       </div>
 
-      {/* INTERACTIVE ISS DISPLAY CONTAINER */}
       <div className="relative w-full max-w-5xl mx-auto aspect-[16/10] sm:aspect-[16/9] flex items-center justify-center bg-transparent">
         <img
           src={imagePath}
@@ -218,26 +236,23 @@ export default function ISSLearn({
           style={{ mixBlendMode: 'screen' }}
         />
 
-        {/* HOTSPOT BUTTONS (Yellow Points) */}
-        {ISS_MODULES.map((mod) => {
-          const isHovered = hoveredModule?.id === mod.id;
+        {/* map hotspots */}
+        {cfg.map((val) => {
+          const ok = !(hov?.id !== val.id);
 
           return (
             <div
-              key={mod.id}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ${
-                isHovered ? 'z-40' : 'z-20'
-              }`}
-              style={{ left: `${mod.x}%`, top: `${mod.y}%` }}
+              key={val.id}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ${ok ? 'z-40' : 'z-20'}`}
+              style={{ left: `${val.x}%`, top: `${val.y}%` }}
             >
               <button
-                onClick={() => setSelectedModule(mod)}
-                onMouseEnter={() => setHoveredModule(mod)}
-                onMouseLeave={() => setHoveredModule(null)}
+                onClick={() => setSel(val)}
+                onMouseEnter={() => setHov(val)}
+                onMouseLeave={() => setHov(null)}
                 className="relative group flex items-center justify-center w-5 h-5 focus:outline-none cursor-pointer"
-                aria-label={`Inspect ${mod.name}`}
+                aria-label={`Inspect ${val.name}`}
               >
-                {/* Heartbeat Pulse (Yellow) */}
                 <motion.span
                   animate={{ scale: [1, 1.4, 1], opacity: [0.15, 0.4, 0.15] }}
                   transition={{
@@ -248,12 +263,10 @@ export default function ISSLearn({
                   className="absolute w-full h-full rounded-full bg-[#ffd700] pointer-events-none"
                 />
 
-                {/* Inner Dot (Yellow) */}
                 <span className="relative w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#ffd700] shadow-[0_0_8px_rgba(255,215,0,0.6)] group-hover:scale-150 group-hover:bg-white transition-all duration-300" />
 
-                {/* Hover Tooltip Preview Positioned Strictly Above Point */}
                 <AnimatePresence>
-                  {isHovered && !selectedModule && (
+                  {ok && !sel && (
                     <motion.div
                       initial={{ opacity: 0, y: 6, scale: 0.9, x: '-50%' }}
                       animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
@@ -261,9 +274,9 @@ export default function ISSLearn({
                       transition={{ duration: 0.15 }}
                       className="absolute bottom-full left-1/2 mb-3 z-50 whitespace-nowrap bg-slate-900/95 border border-[#ffd700]/50 backdrop-blur-xl px-3 py-1.5 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.5)] pointer-events-none flex items-center gap-2"
                     >
-                      <span className="text-sm">{mod.flag}</span>
+                      <span className="text-sm">{val.flag}</span>
                       <span className="text-slate-100 font-mono text-[9px] sm:text-[10px] font-semibold tracking-widest uppercase">
-                        {mod.name}
+                        {val.name}
                       </span>
                     </motion.div>
                   )}
@@ -274,15 +287,14 @@ export default function ISSLearn({
         })}
       </div>
 
-      {/* MODAL POPUP WINDOW */}
       <AnimatePresence>
-        {selectedModule && (
+        {sel && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedModule(null)}
+            onClick={() => setSel(null)}
           >
             <motion.div
               initial={{ scale: 0.95, y: 20, opacity: 0 }}
@@ -292,24 +304,21 @@ export default function ISSLearn({
               className="bg-slate-900/95 border border-[#00ffcc]/30 rounded-3xl w-full max-w-xl overflow-hidden shadow-[0_0_50px_rgba(0,255,204,0.15)] flex flex-col backdrop-blur-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
               <div className="px-6 py-5 bg-[#00ffcc]/5 border-b border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl drop-shadow-md">
-                    {selectedModule.flag}
-                  </span>
+                  <span className="text-3xl drop-shadow-md">{sel.flag}</span>
                   <div>
                     <h3 className="text-slate-100 font-light text-lg sm:text-xl tracking-wide">
-                      {selectedModule.name}
+                      {sel.name}
                     </h3>
                     <p className="text-[#00ffcc] font-mono text-[10px] uppercase tracking-widest font-semibold mt-0.5">
-                      {selectedModule.agency}
+                      {sel.agency}
                     </p>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => setSelectedModule(null)}
+                  onClick={() => setSel(null)}
                   className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors font-mono"
                   aria-label="Close modal"
                 >
@@ -317,43 +326,24 @@ export default function ISSLearn({
                 </button>
               </div>
 
-              {/* Modal Body */}
               <div className="p-6 space-y-8">
                 <div>
                   <h4 className="text-slate-500 font-mono text-[9px] uppercase tracking-[0.3em] mb-3 font-bold">
                     Mission Overview
                   </h4>
                   <p className="text-slate-300 text-sm leading-relaxed font-light">
-                    {selectedModule.details}
+                    {sel.details}
                   </p>
                 </div>
 
-                {/* Specs Grid */}
                 <div>
                   <h4 className="text-slate-500 font-mono text-[9px] uppercase tracking-[0.3em] mb-4 font-bold">
                     Technical Specifications
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(selectedModule.specs).map(
-                      ([label, val], idx) => (
-                        <div
-                          key={idx}
-                          className="bg-black/30 border border-white/5 p-4 rounded-2xl"
-                        >
-                          <p className="text-[#00ffcc]/60 font-mono text-[9px] uppercase tracking-widest mb-1">
-                            {label}
-                          </p>
-                          <p className="text-slate-200 text-xs sm:text-sm font-medium tracking-wide">
-                            {val}
-                          </p>
-                        </div>
-                      )
-                    )}
-                  </div>
+                  <div className="grid grid-cols-2 gap-4">{out}</div>
                 </div>
               </div>
 
-              {/* Modal Footer */}
               <div className="px-6 py-4 bg-black/40 border-t border-white/5 flex justify-between items-center">
                 <span className="text-slate-500/50 text-[9px] font-mono uppercase tracking-[0.2em]">
                   Orbital Spec Sheet
