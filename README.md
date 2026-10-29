@@ -21,25 +21,25 @@
 
 ## Overview
 
-The ***Cosmic ISS Tracker*** is a web app built with React. It lets users watch the International Space Station (ISS) and calculate when it will be visible from any place on Earth. You can start using the Cosmic ISS Tracker away in any web browser and there is no need to download additional software. It also gives details about the ISS’s parts. Shows photos taken on board.
+The ***Cosmic ISS Tracker*** is a web app built with React. It allows users to observe the International Space Station (ISS) and determine its visibility from any location on Earth. You can start using the Cosmic ISS Tracker right away in any web browser — no additional software is required. It also provides information about the ISS's components. It shows photos taken on board.
 
 ---
 
 ## Key Features
 
-* **Browser-Based Live Map:** Shows the position of the ISS, the chosen observer location and the ground track from 46 minutes ago to 138 minutes ahead. The map uses a high‑resolution NASA night image. Runs directly in the browser.
+* **Browser-Based Live Map:** It shows the position of the ISS, the chosen observer location, and the ground track from 46 minutes ago to 138 minutes ahead. The map uses a high-resolution NASA night-time image. It runs directly in the browser.
 
-* **Crew and Docked Spacecraft List:** Shows how many astronauts are on the station and lists every spacecraft that is docked. Hover over an entry to see the crew and vehicle names.
+* **Crew and Docked Spacecraft List:** It shows how many astronauts are on the station and lists every docked spacecraft. Hover over an entry to view the crew and vehicle names.
 
-* **Mission History Tracker:** Keeps a count of how many orbits the ISS has completed since its launch on November 20 1998 using a 92.68‑minute orbit period. It also shows how consecutive days the station has been occupied since November 2 2000 and lists historic visitor (280+) and expedition (76) numbers.
+* **Mission History Tracker:** It keeps a count of how many orbits the ISS has completed since its launch on 20 November 1998, with an orbit period of 92.68 minutes. It also shows how many consecutive days the station has been occupied since 2 November 2000, and lists the number of historic visitors (over 280) and expeditions (76).
 
-* **Photos:** Open the "Little ISS" part of the Tracker menu to read about the ISS and its parts and when they started working there. A few photos appear in the "Learn About the ISS" section.
+* **Photos:** Open the 'Little ISS' section of the Tracker menu to read about the ISS, its components, and when they began operating. The "Learn About the ISS" section contains a few photos.
 
 ---
 
 ## APIs
 
-* **WhereTheISS.at API:** Gives the ISS’s coordinates the TLE data for its orbit, country codes and the time zone based on coordinates.
+* **WhereTheISS.at API:** It provides the coordinates of the ISS, the TLE data for its orbit, country codes, and the time zone based on the coordinates.
 
 * **OpenStreetMap Nominatim API:** Helps find cities by name. Find city names from coordinates along the ISS path.
 
