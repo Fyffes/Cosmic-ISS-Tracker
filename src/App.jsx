@@ -68,10 +68,10 @@ export default function App() {
             </div>
           </section>
 
-          {/* --- INTERACTIVE ISS ANATOMY & MODULE EXPLORER --- */}
+          {/* --- INTERACTIVE ISS --- */}
           <ISSLearn />
 
-          {/* --- NEW: ORBITAL GALLERY --- */}
+          {/* --- ORBITAL GALLERY --- */}
           <ISSView />
 
           {/* --- CONTACT SECTION --- */}
