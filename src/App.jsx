@@ -6,6 +6,7 @@ import { MessageSquare, ChevronDown, Mail } from 'lucide-react';
 import ShootingStarBackground from './ShootingStarBackground';
 import ISSTracker from './ISSTracker';
 import TrackerInfoSection from './TrackerInfoSection';
+import ISSMissions from './ISSMissions';
 import ISSLearn from './ISSLearn';
 import ISSView from './ISSView';
 import SelectMenu from './SelectMenu';
@@ -70,6 +71,9 @@ export default function App() {
 
           {/* --- INTERACTIVE ISS --- */}
           <ISSLearn />
+
+          {/* --- ISS MISSIONS --- */}
+          <ISSMissions />
 
           {/* --- ORBITAL GALLERY --- */}
           <ISSView />
